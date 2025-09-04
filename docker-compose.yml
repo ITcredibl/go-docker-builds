@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile.optimized
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  app-naive:
+    build:
+      context: .
+      dockerfile: dockerfile.naive
+    ports:
+      - "8081:8080"
+    profiles: ["demo"]

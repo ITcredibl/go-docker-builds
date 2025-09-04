@@ -1,0 +1,21 @@
+# Minimal scratch-based image - for fully static binaries
+FROM golang:1.22 AS builder
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags='-s -w' -o /app ./cmd/server/
+
+# Empty base image
+FROM scratch
+
+# Copy CA certificates for HTTPS support
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy compiled binary
+COPY --from=builder /app .
+
+# Health check (HTTP check won't work without busybox)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD ["/app", "health"]
+
+EXPOSE 8080
+CMD ["/app"]

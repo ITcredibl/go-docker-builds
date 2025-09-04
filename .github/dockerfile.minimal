@@ -1,0 +1,13 @@
+# INTERMEDIATE EXAMPLE: Multi-stage build without security hardening
+# Demonstrates size reduction without production best practices
+
+# Build stage
+FROM golang:1.22 AS builder
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app ./cmd/server/
+
+# Run stage - Minimal but insecure (runs as root)
+FROM alpine:latest
+COPY --from=builder /app .
+CMD ["./app"]

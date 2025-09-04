@@ -1,0 +1,12 @@
+# Google's Distroless base image for minimal, secure containers
+FROM golang:1.22 AS builder
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags='-s -w' -o /app ./cmd/server/
+
+# Use distroless base image
+FROM gcr.io/distroless/base-debian12:nonroot
+COPY --from=builder /app .
+USER nonroot
+EXPOSE 8080
+CMD ["/app"]

@@ -1,0 +1,17 @@
+# Binaries
+/app
+/my-app
+optimized-go-app
+
+# Dependencies
+vendor/
+
+# Development files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build artifacts
+sbom.json
+default.pgo

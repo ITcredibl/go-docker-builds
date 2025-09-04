@@ -1,0 +1,14 @@
+# ANTI-PATTERN: Educational example only - DO NOT USE IN PRODUCTION
+# Demonstrates common mistakes that lead to bloated, insecure images
+
+FROM golang:latest
+WORKDIR /app
+
+# Copies everything (including secrets, .git, etc.)
+COPY . .
+
+# No build optimization flags
+RUN go build -o app ./cmd/server/
+
+# Runs as root user - security risk
+CMD ["./app"]
