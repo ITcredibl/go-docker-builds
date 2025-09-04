@@ -116,10 +116,10 @@ make release
 
 🎯 Advanced Use Cases
 
-Scenario	Solution	Image Size
-Cross-platform deployment	advanced/multi-platform/Dockerfile	20.7MB
-C-linked dependencies	advanced/cgo-sqlite/Dockerfile	166MB
-Maximum minimalism + HTTPS	advanced/scratch-with-certs/Dockerfile	7.91MB
+Scenario	        Solution	            Image Size
+Cross-platform      deployment	            advanced/multi-platform/Dockerfile	20.7MB
+C-linked            dependencies	        advanced/cgo-sqlite/Dockerfile	166MB
+Maximum             minimalism + HTTPS	    advanced/scratch-with-certs/Dockerfile	7.91MB
 
 🤝 Contributing
 This repository is maintained as a reference implementation. Feel free to open issues or pull requests for improvements, additional examples, or documentation enhancements.
@@ -132,57 +132,44 @@ Created as a companion to the article "From main.go to Production: Building Mode
 
 
 🎯 Conclusion: From Problem to Production
+
 This repository provides a complete, practical blueprint for solving a common but critical problem in modern software delivery: container bloat.
 
 The Journey:
 ❌ The Problem: Demonstrated how a naive approach creates massive 1.4GB images containing unnecessary tools, source code, and security vulnerabilities.
-
 ✅ The Solution: Systematically applied industry best practices—multi-stage builds, security hardening, and modern tooling—to achieve over 99% size reduction while enhancing security and performance.
-
 🏭 Production Ready: Extended beyond basics to address real-world complexities like C dependencies, multi-architecture deployments, and automated supply chain security.
 
 The Outcome:
 You now have more than just examples; you have a production-grade template used to build:
-
 Ultra-minimal images (7.91MB) for security-sensitive workloads
-
 Multi-architecture builds for heterogeneous cloud environments
-
 C-compatible images for applications with native dependencies
-
 Fully automated pipelines that enforce security and best practices
 
 This repository encapsulates the evolution from simple containerization to sophisticated cloud-native application delivery, providing a proven foundation for building and deploying Go services at scale.
 
 🚀 Advanced Production Patterns
+
 The /advanced/ directory delivers specialized solutions for complex production scenarios:
-
 CGO Dependencies: Complete working example for applications requiring C-linked libraries (SQLite, database drivers, image processing)
-
 Multi-Platform Builds: Single Dockerfile configuration for simultaneous amd64 and arm64 builds (Apple Silicon, AWS Graviton, Raspberry Pi)
-
 HTTPS with Scratch: Minimal scratch-based image with CA certificates for applications requiring outgoing SSL/TLS connections
-
 These aren't theoretical examples—they're battle-tested patterns for enterprise-scale deployment challenges.
 
 🔄 Enterprise-Grade CI/CD
+
 This repository includes complete, working CI/CD implementations that transcend basic automation:
-
 Security-First Pipeline: Automated vulnerability scanning, SBOM generation, and compliance-ready artifact provenance
-
 Multi-Stage Deployment: Development → Staging → Production promotion with environment-specific configurations
-
 Release Engineering: Automated semantic versioning, multi-architecture image builds, and container registry management
 
 The .github/workflows/ directory provides production-tested workflows that implement modern DevSecOps practices, ready to be customized for your organization's deployment environment.
 
 Key Improvements:
+
 More professional tone using terms like "blueprint," "enterprise-grade," and "battle-tested"
-
 Emphasizes the practical value beyond education ("more than just examples")
-
-Highlights the real-world applicability for different use cases
-
+Highlights the real-world applicability for different use case
 Stronger call-out for the advanced patterns and their specific benefits
-
 Positioned as a "production-grade template" rather than just a guide
