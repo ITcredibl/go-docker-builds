@@ -1,14 +1,25 @@
 name: CI
 
+# ADD THESE PERMISSIONS AT THE WORKFLOW LEVEL (top of file)
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
+
+env:
+  APP_NAME: optimized-go-app
+  REGISTRY: ghcr.io
+  REGISTRY_NS: ${{ github.repository_owner }}
 
 jobs:
   test:
-    name: Run Tests
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,10 +29,10 @@ jobs:
           go-version: '1.22'
           cache-dependency-path: go.mod
       - name: Run tests
-        run: make test
+        run: go test -v ./...
 
-  build-and-scan:
-    name: Build and Security Scan
+  security-scan:
+    name: Security Scan
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -29,11 +40,11 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build optimized image
-        run: make build-optimized
+        run: docker build -t ${{ env.APP_NAME }}:optimized -f dockerfile.optimized .
       - name: Security scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: optimized-go-app:optimized
+          image-ref: ${{ env.APP_NAME }}:optimized
           format: sarif
           output: trivy-results.sarif
           severity: HIGH,CRITICAL
@@ -45,9 +56,36 @@ jobs:
       - name: Generate SBOM
         run: |
           curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-          syft optimized-go-app:optimized -o json > sbom.json
+          syft ${{ env.APP_NAME }}:optimized -o json > sbom.json
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: sbom
           path: sbom.json
+
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push optimized image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile.optimized
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NS }}/${{ env.APP_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NS }}/${{ env.APP_NAME }}:${{ github.sha }}
