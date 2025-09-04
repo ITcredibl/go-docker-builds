@@ -2,7 +2,7 @@
 FROM golang:1.22 AS builder
 WORKDIR /app
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags='-s -w' -o /app ./cmd/server/
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags='-s -w' -o /usr/bin/app ./cmd/server/
 
 # Empty base image
 FROM scratch
@@ -11,11 +11,7 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Copy compiled binary
-COPY --from=builder /app .
-
-# Health check (HTTP check won't work without busybox)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/app", "health"]
+COPY --from=builder /usr/bin/app /app
 
 EXPOSE 8080
 CMD ["/app"]

@@ -4,10 +4,15 @@
 # Build stage
 FROM golang:1.22 AS builder
 WORKDIR /app
+
+# Copy dependency files if they exist
+COPY go.mod ./
+RUN if [ -f go.sum ]; then COPY go.sum ./ && go mod download; else go mod download; fi
+
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app ./cmd/server/
+RUN CGO_ENABLED=0 GOOS=linux go build -o /usr/bin/app ./cmd/server/
 
 # Run stage - Minimal but insecure (runs as root)
 FROM alpine:latest
-COPY --from=builder /app .
-CMD ["./app"]
+COPY --from=builder /usr/bin/app /app
+CMD ["/app"]
