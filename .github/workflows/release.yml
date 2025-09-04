@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  APP_NAME: optimized-go-app
+  REGISTRY: ghcr.io
+  REGISTRY_NS: ${{ github.repository_owner }}
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: go.mod
+      - name: Run tests
+        run: go test -v ./...
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-linux
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build optimized image
+        run: docker build -t $APP_NAME:optimized -f dockerfile.optimized .
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: $APP_NAME:optimized
+          format: sarif
+          output: trivy-results.sarif
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push optimized image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile.optimized
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NS }}/${{ env.APP_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_NS }}/${{ env.APP_NAME }}:${{ github.sha }}
+      - name: Generate SBOM
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ env.REGISTRY_NS }}/${{ env.APP_NAME }}:latest
+          docker run --rm anchore/syft:latest ${{ env.REGISTRY }}/${{ env.REGISTRY_NS }}/${{ env.APP_NAME }}:latest -o json > sbom.json
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
