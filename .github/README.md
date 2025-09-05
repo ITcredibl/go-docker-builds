@@ -22,6 +22,7 @@ make run
 curl http://localhost:8080
 
 📊 Image Comparison
+
 Dockerfile	            Size	Security	    Use Case
 dockerfile.naive	    ~950MB	❌ Poor	       Anti-pattern example
 dockerfile.minimal	    ~17MB	⚠️ Basic	    Intermediate learning
@@ -30,6 +31,7 @@ dockerfile.scratch	    ~10MB	✅ Minimal	   Fully static binaries
 dockerfile.distroless	~25MB	✅ Secure	   Google's distroless base
 
 🛠️ Features
+
 Multi-stage builds for minimal final images
 Non-root user execution for security
 Profile-Guided Optimization (PGO) ready
@@ -41,7 +43,9 @@ CI/CD workflows with GitHub Actions
 Makefile for developer convenience
 
 📖 Usage
+
 Local Development
+
 bash
 # Build and run with Docker Compose
 docker compose up --build
@@ -49,14 +53,18 @@ docker compose up --build
 # Or use the Makefile
 make build-optimized
 make run
+
 Production Deployment
+
 bash
 # Build multi-architecture image
 make build-multi-arch
 
 # Or use the release workflow
 make release
+
 🔧 Advanced Features
+
 Profile-Guided Optimization (PGO)
 Enable PGO for performance improvements:
 
@@ -77,6 +85,7 @@ Security scan your images:
 
 bash
 make scan
+
 🤝 Contributing
 This repository is maintained as a reference implementation. Feel free to open issues or pull requests for improvements.
 
